@@ -1,13 +1,17 @@
 version: '3'
 services:
   postgres: 
-    image: tridockerreact.azurecr.io/postgres:latest
+    image: postgres:latest
+    container_name: postgres
+    hostname: tricontainerregistries.azurecr.io
     volumes:
       - postgresdata:/var/lib/postgresql/data
     environment:
       - POSTGRES_PASSWORD=postgres
   redis:
-    image: tridockerreact.azurecr.io/redis:latest
+    image: redis:latest
+    container_name: redis
+    hostname: tricontainerregistries.azurecr.io
     volumes:
       - redisdata:/data
   api:
@@ -17,7 +21,7 @@ services:
     # volumes:
     #   - /app/node_modules
     #   - ./server:/app
-    image: tridockerreact.azurecr.io/api
+    image: tricontainerregistries.azurecr.io/api
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -33,7 +37,7 @@ services:
     # volumes:
     #   - /app/node_modules
     #   - ./client:/app
-    image: tridockerreact.azurecr.io/client
+    image: tricontainerregistries.azurecr.io/client
   worker:
     build:
       dockerfile: Dockerfile.dev
@@ -41,7 +45,7 @@ services:
     # volumes:
     #   - /app/node_modules
     #   - ./worker:/app
-    image: tridockerreact.azurecr.io/worker
+    image: tricontainerregistries.azurecr.io/worker
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -50,12 +54,20 @@ services:
     build: 
       dockerfile: Dockerfile.dev
       context: ./nginx
-    image: tridockerreact.azurecr.io/nginx
-    ports:
-      - 3050:80
+    image: tricontainerregistries.azurecr.io/nginx
+    # ports:
+    #   - 3050:80
     depends_on:
       - api
       - client
 volumes:
   postgresdata:
+    driver: azure_file
+    driver_opts:
+      share_name: postgresdata
+      storage_account_name: tridockervolumes
   redisdata:
+    driver: azure_file
+    driver_opts:
+      share_name: redisdata
+      storage_account_name: tridockervolumes
